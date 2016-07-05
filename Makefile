@@ -1,5 +1,4 @@
-CXXFLAGS += -I.
-CXXFLAGS += -I./base
+CXXFLAGS += -I./
 CXXFLAGS += -std=c++11 -Wall -g -c -o
 
 LIB_FILES := -lglog -L/usr/local/lib -lgtest -lgtest_main -lpthread
@@ -7,6 +6,12 @@ LIB_FILES := -lglog -L/usr/local/lib -lgtest -lgtest_main -lpthread
 
 CPP_SOURCES := ./base/once.cc \
 	./base/mutex.cc \
+	./base/condition_variable.cc \
+	./base/semaphore.cc \
+	./base/time.cc \
+	./base/thread.cc \
+	./base/task_queue.cc \
+	./base/worker_thread.cc \
 
 CPP_OBJECTS := $(CPP_SOURCES:.cc=.o)
 
