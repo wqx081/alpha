@@ -5,7 +5,8 @@ CXXFLAGS += -std=c++11 -Wall -g -c -o
 LIB_FILES := -lglog -L/usr/local/lib -lgtest -lgtest_main -lpthread
 
 
-CPP_SOURCES := ./base/once.cc 
+CPP_SOURCES := ./base/once.cc \
+	./base/mutex.cc \
 
 CPP_OBJECTS := $(CPP_SOURCES:.cc=.o)
 
