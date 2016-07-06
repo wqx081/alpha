@@ -11,6 +11,7 @@ namespace base {
 class Thread {
  public:
   typedef int32_t LocalStorageKey;
+  typedef uint64_t ThreadId;
 
   class Options {
    public:
@@ -49,7 +50,7 @@ class Thread {
 
   // Misc
   static int GetCurrentProcessId();
-  static int GetCurrentThreadId();
+  static ThreadId GetCurrentThreadId();
 
   // Thread-Local storage.
   static LocalStorageKey CreateThreadLocalKey();

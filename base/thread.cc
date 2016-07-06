@@ -26,8 +26,8 @@ const pthread_t kNoThread = (pthread_t) 0;
 int Thread::GetCurrentProcessId() {
   return static_cast<int>(getpid());
 }
-int Thread::GetCurrentThreadId() {
-  return static_cast<int>(syscall(__NR_gettid));
+Thread::ThreadId Thread::GetCurrentThreadId() {
+  return static_cast<Thread::ThreadId>(syscall(__NR_gettid));
 }
 
 class Thread::PlatformData {
