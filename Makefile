@@ -1,8 +1,9 @@
 CXXFLAGS += -I./
+CXXFLAGS += -I./third_party/mpr_sm2/
 CXXFLAGS += -std=c++11 -Wall -g -c -o
 
 LIB_FILES := -lglog -L/usr/local/lib -lgtest -lgtest_main -lpthread
-CRYPTO_LIB_FILES := -L./third_party/sm2 -lsm2
+CRYPTO_LIB_FILES := -L./third_party/sm2 -lsm2 -L./third_party/mpr_sm2 -lmiracl
 
 CPP_SOURCES := ./base/once.cc \
 	./base/mutex.cc \

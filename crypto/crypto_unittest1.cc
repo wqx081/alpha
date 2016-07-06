@@ -9,6 +9,7 @@
 #include "base/worker_thread.h"
 #include "base/task_queue.h"
 
+//#include "third_party/mpr_sm2/sm2.h"
 #include "third_party/mpr_sm2/mpr_sm2.h"
 
 #include <gtest/gtest.h>
@@ -262,7 +263,6 @@ int MPRAsymmCryptPrvDecrypt(AsymmAlgorithm alg,
   switch (alg) {
     case SM2:
       if (LoadPrivateKey(p_prvkey, prvkey_len, &pucPrivateKey) != true) {
-	LOG(INFO) << "------------1";
         return BAD_PARAM;
       }
       UnpackCipher(p_in_data, in_len, pucPrivateKey.bits, &decipher);
@@ -274,16 +274,13 @@ int MPRAsymmCryptPrvDecrypt(AsymmAlgorithm alg,
                                       (uint8*)p_out_data,
                                       out_len);
       if (ret != SDR_OK) {
-	LOG(INFO) << "------------2: " << ret;
         return ret;
       }
       return 0;
 
     default:
-	LOG(INFO) << "------------3";
       return BAD_PARAM;
   }
-	LOG(INFO) << "------------4";
   return BAD_CALL;
 }
 
@@ -492,8 +489,6 @@ bool CreateSM2KeyPair(unsigned char* public_key, int* public_key_len,
     memcpy(public_key, wx, wx_len);
     memcpy(public_key + wx_len, wy, wy_len);
     *public_key_len = wx_len + wy_len;
-    LOG(INFO) << " wx_len: " << wx_len << " wy_len: " << wy_len;
-    LOG(INFO) << " private_key_len: " << *private_key_len;
     return true;
   }
 
@@ -530,77 +525,6 @@ TEST(ThreadPool, SM2) {
     thread_pool.AddTask(new MprSM2Task(i));
   } 
   LOG(INFO) << "--Done";
-}
-
-TEST(Exchage1, SM2) {
-  int ret;
-  unsigned char sm2_public_key[64] = {0};
-  unsigned char sm2_private_key[32] = {0};
-  int sm2_public_key_len = 0;
-  int sm2_private_key_len = 0;
-  EXPECT_TRUE(CreateSM2KeyPair(sm2_public_key, &sm2_public_key_len,
-          		       sm2_private_key, &sm2_private_key_len));
-
-  const char* text = "Hello World";
-
-  unsigned char cipherLicense[256] = {0};
-  unsigned int  cipher_len = 256;
-
-  unsigned char decipherLicense[256] = {0};
-  unsigned int  decipher_len = 256;
-
-  // int  sm2_encrypt(unsigned char *msg, 
-  //                  int msglen, 
-  //                  unsigned char *wx, 
-  //                  int wxlen, 
-  //                  unsigned char *wy, 
-  //                  int wylen, 
-  //                  unsigned char *outmsg);
-  
-  ret = sm2_encrypt((unsigned char*)text,
-		    strlen(text),
-		    &sm2_public_key[0], 32,
-		    &sm2_public_key[32], 32,
-                    cipherLicense);
-  cipher_len = ret;
-  EXPECT_EQ(cipher_len, strlen(text) + 96);
-  // OLY
-  //ret = MPRAsymmCryptPubEncrypt(SM2, sm2_public_key, sm2_public_key_len,
-  //      	                (const unsigned char*)text,
-  //      			strlen((char*)text),
-  //      			cipherLicense,
-  //      			&cipher_len);
-  //EXPECT_EQ(SDR_OK, ret);
-  // int  sm2_decrypt(unsigned char *msg, 
-  //                  int msglen, 
-  //                  unsigned char *privkey, 
-  //                  int privkeylen, 
-  //                  unsigned char *outmsg);
-  //
-  
-  unsigned char sbuf[1024] = {0};
-  ret = sm2_decrypt(cipherLicense, cipher_len,
-		    sm2_private_key, sm2_private_key_len,
-		    sbuf);
-
-  LOG(INFO) << "ret: " << ret;
-  LOG(INFO) << "cipher_len: " << cipher_len;
-  LOG(INFO) << "sbuf: " << sbuf;
-  EXPECT_TRUE((cipher_len - ret - 96) == 0);
-  
-  
-  //memcpy(sbuf, cipherLicense, cipher_len);
-  ret = MPRAsymmCryptPrvDecrypt(SM2,
-			        sm2_private_key,
-				sm2_private_key_len,
-				cipherLicense,
-				cipher_len,
-				decipherLicense,
-				&decipher_len);
-  std::string decipher_str(decipherLicense[0], decipher_len);
-
-  EXPECT_TRUE(SDR_OK == ret);
-  LOG(INFO) << "decipherLicense: " << decipherLicense;
 }
 
 } // namespace alpha
