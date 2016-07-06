@@ -7,132 +7,60 @@
 
 namespace oly {
 
-void  mpz_init(
-    BIGINT *a
-);
+void  mpz_init(BIGINT *a);
 
-void  mpz_set(
-    BIGINT *c, 
-    BIGINT *a
-);
+void  mpz_set(BIGINT *c, BIGINT *a);
 
 // c = a + b
-void  mpz_add(
-    BIGINT *c, 
-    BIGINT *a, 
-    BIGINT *b
-);
+void  mpz_add(BIGINT *c, BIGINT *a, BIGINT *b);
 
 // c = a - b
-void  mpz_sub(
-    BIGINT *c, 
-    BIGINT *a,
-    BIGINT *b
-);
+void  mpz_sub(BIGINT *c, BIGINT *a, BIGINT *b);
 
 // c = a * b
-void  mpz_mul(
-    BIGINT *c, 
-    BIGINT *a,
-    BIGINT *b
-);
+void  mpz_mul(BIGINT *c, BIGINT *a, BIGINT *b);
 
 // c = a mod b
-void  mpz_mod(
-    BIGINT *c, 
-    BIGINT *a, 
-    BIGINT *b
-);
+void  mpz_mod(BIGINT *c, BIGINT *a, BIGINT *b);
 
 // c = (a + b) mod p
-void  mpz_add_mod(
-    BIGINT *c, 
-    BIGINT *a, 
-    BIGINT *b,
-    BIGINT *p
-);
+void  mpz_add_mod(BIGINT *c, BIGINT *a, BIGINT *b, BIGINT *p);
 
 // c = (a - b) mod p
-void  mpz_sub_mod(
-    BIGINT *c,
-    BIGINT *a, 
-    BIGINT *b,
-    BIGINT *p
-);
+void  mpz_sub_mod(BIGINT *c, BIGINT *a, BIGINT *b, BIGINT *p);
 
 // c = (a * b) mod p
-void  mpz_mul_mod(
-    BIGINT *c,
-    BIGINT *a,
-    BIGINT *b,
-    BIGINT *p
-);
+void  mpz_mul_mod(BIGINT *c, BIGINT *a, BIGINT *b, BIGINT *p);
 
 // c = (a ^ b) mod p
-void  mpz_exp_mod(
-    BIGINT *c, 
-    BIGINT *a, 
-    BIGINT *b, 
-    BIGINT *p
-);
+void  mpz_exp_mod(BIGINT *c, BIGINT *a, BIGINT *b, BIGINT *p);
 
 // c = 1/a mod p
-void  mpz_invert(
-    BIGINT *c, 
-    BIGINT *a, 
-    BIGINT *p
-);
+void  mpz_invert(BIGINT *c, BIGINT *a, BIGINT *p); 
 
-void  mpz_mod_BarrettInit(
-    BIGINT *c, 
-    TBarrett *pbuf
-);
+void  mpz_mod_BarrettInit(BIGINT *c, TBarrett *pbuf);
 
 
-void  mpz_BarrettSetBuf(
-    TBarrett *pbuf
-);
+void  mpz_BarrettSetBuf(TBarrett *pbuf);
 
 // u cmp v
-S8  mpz_cmp(
-    BIGINT *u, 
-    BIGINT *v
-);
+S8  mpz_cmp(BIGINT *u, BIGINT *v);
 
 // u cmp val
-S8  mpz_cmp_ui(
-    BIGINT *u,
-    unsigned long val
-);
+S8  mpz_cmp_ui(BIGINT *u, unsigned long val);
 
-U8  mpz_tstbit(
-    BIGINT *u, 
-    unsigned long bit_index
-);
+U8  mpz_tstbit(BIGINT *u, unsigned long bit_index);
 
-void  mpz_clrbit(
-    BIGINT *u, 
-    unsigned long bit_index
-);
+void  mpz_clrbit(BIGINT *u, unsigned long bit_index);
 
-void  mpz_set_ui(
-    BIGINT *u,
-    unsigned long d
-);
+void  mpz_set_ui(BIGINT *u, unsigned long d);
 
-U8  mpz_odd_p(
-    BIGINT *b
-);
+U8  mpz_odd_p(BIGINT *b);
 
-U32  mpz_get_ui(
-    BIGINT *u
-);
+U32  mpz_get_ui(BIGINT *u);
 
-void  mpz_add_ui(
-    BIGINT *c,
-    BIGINT *a, 
-    unsigned long b
-);
+void  mpz_add_ui(BIGINT *c, BIGINT *a, unsigned long b);
+
 void  mpz_add_ui_mod(
     BIGINT *c, 
     BIGINT *a,

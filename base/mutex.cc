@@ -110,4 +110,32 @@ bool RecursiveMutex::TryLock() {
   return true;
 }
 
+///////////////////////// ReadWriteLock
+ReadWriteLock::ReadWriteLock() : native_handle_(PTHREAD_RWLOCK_INITIALIZER) {}
+
+ReadWriteLock::~ReadWriteLock() {
+  int result = pthread_rwlock_destroy(&native_handle_);
+  DCHECK_EQ(result, 0);
+}
+
+void ReadWriteLock::ReadAcquire() {
+  int result = pthread_rwlock_rdlock(&native_handle_);
+  DCHECK_EQ(result, 0) << ". " << strerror(result);
+}
+
+void ReadWriteLock::ReadRelease() {
+  int result = pthread_rwlock_unlock(&native_handle_);
+  DCHECK_EQ(result, 0) << ". " << strerror(result);
+}
+
+void ReadWriteLock::WriteAcquire() {
+  int result = pthread_rwlock_wrlock(&native_handle_);
+  DCHECK_EQ(result, 0) << ". " << strerror(result);
+}
+
+void ReadWriteLock::WriteRelease() {
+  int result = pthread_rwlock_unlock(&native_handle_);
+  DCHECK_EQ(result, 0) << ". " << strerror(result);
+}
+
 } // namespace base

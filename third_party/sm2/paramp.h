@@ -16,16 +16,18 @@ typedef struct
 	mpz_t			coa;
 	mpz_t			cob;
 	point_affn_t	generator;
-}ecc_param;
+} ecc_param;
 
-extern ecc_param *paramptr;
+// TODO(wqx):
+extern ecc_param *g_paramptr;
 
 }
 
-#define FIELD_P				paramptr->fieldp
-#define SUBGRP_ORDER		paramptr->subgrpq
-#define COA					paramptr->coa
-#define COB					paramptr->cob
-#define GENERATOR			paramptr->generator
+// TODO(wqx):
+#define FIELD_P				g_paramptr->fieldp
+#define SUBGRP_ORDER		g_paramptr->subgrpq
+#define COA					g_paramptr->coa
+#define COB					g_paramptr->cob
+#define GENERATOR			g_paramptr->generator
 
 #endif

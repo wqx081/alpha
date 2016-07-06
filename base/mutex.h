@@ -85,5 +85,52 @@ class LockGuard final {
 };
 
 
+class ReadWriteLock {
+ public:
+  ReadWriteLock();
+  ~ReadWriteLock();
+
+  void ReadAcquire();
+  void ReadRelease();
+
+  void WriteAcquire();
+  void WriteRelease();
+
+ private:
+  using NativeHandle = pthread_rwlock_t;
+  NativeHandle native_handle_;
+  
+  DISALLOW_COPY_AND_ASSIGN(ReadWriteLock);
+};
+
+class AutoReadLock {
+ public:
+  explicit AutoReadLock(ReadWriteLock& lock) : lock_(lock) {
+    lock_.ReadAcquire();
+  }
+  ~AutoReadLock() {
+    lock_.ReadRelease();
+  }
+
+ private:
+  ReadWriteLock& lock_;
+ 
+  DISALLOW_COPY_AND_ASSIGN(AutoReadLock);
+};
+
+class AutoWriteLock {
+ public:
+  explicit AutoWriteLock(ReadWriteLock& lock) : lock_(lock) {
+    lock_.WriteAcquire();
+  }
+  ~AutoWriteLock() {
+    lock_.WriteRelease();
+  }
+
+ private:
+  ReadWriteLock& lock_;
+  DISALLOW_COPY_AND_ASSIGN(AutoWriteLock);
+};
+
 } // namespace base
 #endif // BASE_MUTEX_H_

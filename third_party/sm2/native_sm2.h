@@ -78,7 +78,8 @@ typedef void* ObjectPointer;
 
 namespace oly {
 
-extern int32 precom;
+//TODO(wqx):
+extern int32 g_precom;
 
 
 

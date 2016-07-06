@@ -1,5 +1,6 @@
 #ifndef _NNMLIB_H
 #define _NNMLIB_H
+#include "bigint.h"
 
 namespace oly {
 

@@ -33,8 +33,10 @@ void dump_mem(unsigned char *ptr, int len, const char *title)
 }
 
 
-ecc_param sysparam;
-ecc_param *paramptr = &sysparam;
+ecc_param g_sysparam;
+ecc_param *g_paramptr = &g_sysparam;
+
+
 TBarrett pXbufFieldPrime;
 TBarrett pXbufSubgrpOrder;
 
@@ -181,13 +183,7 @@ int sm2_key_gen_ext(
 	return 0;
 }
 
-int sm2_key_gen(
-	sm2_pubkey *pubkey,
-	sm2_prvkey *prvkey,
-	char* pubkeydata,
-	int*  puLen
-)
-{
+int sm2_key_gen(sm2_pubkey *pubkey, sm2_prvkey *prvkey, char* pubkeydata, int*  puLen) {
 	mpz_init(prvkey->s);
 	random_limit(prvkey->s, SUBGRP_ORDER);
 	mpz_mod_BarrettInit(FIELD_P, &pXbufFieldPrime);

@@ -20,17 +20,8 @@
 
 namespace oly {
 
-void BS2IP(
-    mpz_ptr z,
-    U8 * c,
-    int n
-);
-
-U8 I2BSP(
-    U8 * data,
-    U16 n, 
-    mpz_ptr z
-);
+void BS2IP(mpz_ptr z, U8 * c, int n);
+U8 I2BSP(U8 * data, U16 n, mpz_ptr z);
 
 } // namespace oly
 

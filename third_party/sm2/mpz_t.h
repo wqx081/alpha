@@ -51,7 +51,7 @@ typedef U64 NN_DOUBLE_DIGIT;
 #endif
 typedef struct {
 	U32 data[ECC_MAXLONG];
-}BIGINT;
+} BIGINT;
 
 typedef BIGINT BIGINT_t[1];
 typedef BIGINT*  BIGINT_ptr;

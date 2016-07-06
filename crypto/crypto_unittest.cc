@@ -3,13 +3,20 @@
 #include "third_party/sm2/srand.h"
 #include "third_party/sm2/sm3.h"
 
+#include "base/thread.h"
+#include "base/mutex.h"
+#include "base/task.h"
+#include "base/worker_thread.h"
+#include "base/task_queue.h"
+
 #include <gtest/gtest.h>
+
+using namespace base;
 
 namespace crypto {
 
 namespace {
 
-#if 0
 void DumpHexString(unsigned char* buf, unsigned int len)
 {
     static char str[1024] = {0};
@@ -28,9 +35,11 @@ void DumpHexString(unsigned char* buf, unsigned int len)
     *pout++ = hex[(*pin)&0xF];
     *pout = 0;
 
-    printf("%s\n", str);
+    //printf("%s\n", str);
+    LOG(INFO) << str;
 }
 
+#if 0
 void HexStringToASCII(unsigned char* buf, unsigned int len)
 {
     static unsigned char str[1024] = {0};
@@ -248,7 +257,7 @@ int MPRAsymmCryptPrvDecrypt(AsymmAlgorithm alg,
   }
   switch (alg) {
     case SM2:
-      if (LoadPrivateKey(p_prvkey, prvkey_len, &pucPrivateKey) != 0) {
+      if (LoadPrivateKey(p_prvkey, prvkey_len, &pucPrivateKey) != true) {
         return BAD_PARAM;
       }
       UnpackCipher(p_in_data, in_len, pucPrivateKey.bits, &decipher);
@@ -270,7 +279,14 @@ int MPRAsymmCryptPrvDecrypt(AsymmAlgorithm alg,
   return BAD_CALL;
 }
 
+Mutex lock;
+
+//Mutex gen_key_pair_lock;
+//Mutex pub_key_encrypt_lock;
+//Mutex prv_key_decrypt_lock;
+
 bool TestSM2GenerateKeyPair() {
+
   int ret;
   const int KEY_BITS = 256;
   unsigned char pubkey[128] = {0};
@@ -279,7 +295,6 @@ bool TestSM2GenerateKeyPair() {
   unsigned int  prvkey_len = 128;
 
   const char* text = "Hello World";
-  std::string text_str(text);
 
   unsigned char cipherLicense[256] = {0};
   unsigned int  cipher_len = 256;
@@ -288,10 +303,15 @@ bool TestSM2GenerateKeyPair() {
 
 
   // GenerateKeyPair
+
+  LockGuard<Mutex> g(&lock);
+
+  //{ LockGuard<Mutex> l(&gen_key_pair_lock);
   ret = MPRAsymmCryptGenerateKeyPair(SM2, KEY_BITS,
                                      pubkey, &pubkey_len,
                                      prvkey, &prvkey_len); 
-  EXPECT_TRUE(ret == 0);
+  EXPECT_EQ(SDR_OK, ret);
+   //}  
   
   // PubEncrypt
   ret = MPRAsymmCryptPubEncrypt(SM2, pubkey, pubkey_len,
@@ -299,10 +319,11 @@ bool TestSM2GenerateKeyPair() {
                                 strlen((char*)text),
                                 cipherLicense,
                                 &cipher_len);
-  EXPECT_TRUE(ret == 0);
+  EXPECT_EQ(SDR_OK, ret);
 
   unsigned char sbuf[1024] = {0};
 
+  memcpy(sbuf, cipherLicense, cipher_len);
   // PrvDecrypt
   ret = MPRAsymmCryptPrvDecrypt(SM2,
                                 prvkey,
@@ -313,9 +334,7 @@ bool TestSM2GenerateKeyPair() {
                                 &decipher_len);
   std::string decipher_str(decipherLicense[0], decipher_len);
 
-  EXPECT_TRUE(ret == 0);
-
-  EXPECT_TRUE(text_str == decipher_str);
+  EXPECT_TRUE(SDR_OK == ret);
 
 
   // Sing and Verify
@@ -332,14 +351,17 @@ bool TestSM2GenerateKeyPair() {
 
   ret = SDF_GenerateRandom(sizeof(msg), msg);
   oly::sm3_context sm3_context;
+  memset(&sm3_context, 0, sizeof(sm3_context));
   oly::sm3_starts(&sm3_context);
   oly::sm3_update(&sm3_context, msg, msglen); // input <- msg
   oly::sm3_finish(&sm3_context, hash); // output -> hash
+  //DumpHexString(hash, hlen);
+
 
   ret = LoadPrivateKey(prvkey, prvkey_len, &pucPrivateKey);
-  EXPECT_EQ(0, ret);
+  EXPECT_TRUE(ret);
   ret = LoadPublicKey(pubkey, pubkey_len, &pucPublicKey);
-  EXPECT_EQ(0, ret);
+  EXPECT_TRUE(ret);
 
   ret = oly::SNF_ExternalSign_ECC(nullptr, 
                                   SGD_SM2_1, 
@@ -349,7 +371,7 @@ bool TestSM2GenerateKeyPair() {
                                   (unsigned char*)content,
                                   content_len,
                                   &signaure);
-  EXPECT_EQ(0, ret);
+  EXPECT_EQ(SDR_OK, ret);
   ret = oly::SNF_ExternalVerify_ECC(nullptr,
                                     SGD_SM2_1,
                                     &pucPublicKey,
@@ -358,15 +380,92 @@ bool TestSM2GenerateKeyPair() {
                                     (unsigned char*)content,
                                     content_len,
                                     &signaure);  
-  EXPECT_EQ(0, ret);
+  EXPECT_EQ(SDR_OK, ret);
   return ret == 0;
 }
 
 ////////////////////////////////////////////// OLY
 
 TEST(Sm2Crypto, GenerateKeyPair) {
-  EXPECT_TRUE(TestSM2GenerateKeyPair);
+  EXPECT_TRUE(TestSM2GenerateKeyPair());
 }
 
+/////////////////////////////////////////////// Mult-thread
+//
+class SM2Task : public base::Task {
+ public:
+  SM2Task(int i = 0) : i_(i) {}
+
+  virtual void Run() override {
+    EXPECT_TRUE(TestSM2GenerateKeyPair()); 
+    //LOG(INFO) << "-- thread: " << Thread::GetCurrentThreadId() << " done [" << i_ << "] task";
+  }
+ private:
+  int i_;
+};
+
+class ThreadPool {
+ public:
+  ThreadPool() : initialized_(false), thread_pool_size_(0) {
+  }
+
+  virtual ~ThreadPool() {
+    LockGuard<Mutex> g(&lock_);
+    queue_.Terminate();
+    if (initialized_) {
+      for (auto i = thread_pool_.begin(); i != thread_pool_.end(); ++i) {
+        delete *i;
+      }
+    }
+  }
+
+  void SetThreadPoolSize(int thread_pool_size) {
+    LockGuard<Mutex> g(&lock_);
+    DCHECK(thread_pool_size >= 0);
+    if (thread_pool_size < 1) {
+      thread_pool_size = 2; // DEFAULT
+    }
+    thread_pool_size_ = std::max(std::min(thread_pool_size, kMaxThreadPoolSize), 1);
+  }
+
+  void EnsureInitialized() {
+    base::LockGuard<Mutex> g(&lock_);
+    if (initialized_) {
+      return;
+    }
+
+    initialized_ = true;
+    for (int i = 0; i < thread_pool_size_; ++i) {
+      thread_pool_.push_back(new WorkerThread(&queue_));
+    }
+  }
+
+  void AddTask(Task* task) {
+    EnsureInitialized();
+    queue_.Append(task);
+  }
+ private:
+  static const int kMaxThreadPoolSize = 8;
+
+  base::Mutex lock_;
+  bool initialized_;
+  int thread_pool_size_;
+  std::vector<WorkerThread*> thread_pool_;
+  TaskQueue queue_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadPool);
+};
+
+const int ThreadPool::kMaxThreadPoolSize;
+
+TEST(ThreadPool, SM2) {
+  const int maxTimes = 100;
+  ThreadPool thread_pool;
+  thread_pool.SetThreadPoolSize(8);
+  for (int i=0; i < maxTimes; ++i) {
+    thread_pool.AddTask(new SM2Task(i));
+  } 
+  LOG(INFO) << "--Done";
+}
 
 } // namespace alpha

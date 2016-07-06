@@ -24,6 +24,7 @@
 #else
 namespace oly {
 
+// Non thread safe
 extern int eccbits;
 
 }

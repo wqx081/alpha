@@ -12,12 +12,12 @@ CXXFLAGS += -Wno-write-strings
 CPPFLAGS += -g -c
 CPPFLAGS += -I.
 
-OBJS =  bigint.o	\
-		curvep.o	\
+OBJS =  bigint_r.o	\
+		curvep_r.o	\
 		dbg_print.o	\
-		eicl_mul.o	\
-		mpzlib.o	\
-		NNMLib.o	\
+		eicl_mul_r.o	\
+		mpzlib_r.o	\
+		NNMLib_r.o	\
 		sm2s.o		\
 		sm3.o		\
 		srand.o		\
